@@ -1,16 +1,17 @@
-# ===== nixpacks.toml - Railway configuration =====
-[phases.setup]
-nixPkgs = ["python311"]
+# Nixpacks configuration for Railway
+# Railway will automatically detect and use this instead of Dockerfile
 
-[phases.install]
+# Build phase
+[nixpacks.build]
 cmds = [
-    "python -m venv /opt/venv",
-    "/opt/venv/bin/pip install -r requirements.txt"
+  "python -m pip install --upgrade pip",
+  "pip install -r requirements.txt"
 ]
 
-[phases.build]
-cmds = []
-
-[start]
+# Start command
+[nixpacks.start]
 cmd = "python main.py"
-types = ["web"]
+
+# Environment variables that must be set for build
+[nixpacks.variables]
+PYTHON_VERSION = "3.11"

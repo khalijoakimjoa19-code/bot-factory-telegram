@@ -1,7 +1,8 @@
-# This way Railway knows to treat it as a Python project
+# Build configuration for Railway
 [build]
-provider = "python"
-pythonVersion = "3.11"
-
-[deploy]
+builder = "nixpacks"
+buildCommand = "pip install -r requirements.txt"
 startCommand = "python main.py"
+
+[env]
+PYTHON_VERSION = "3.11"
