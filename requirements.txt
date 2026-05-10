@@ -1,8 +1,8 @@
-# requirements.txt - Add PostgreSQL and required packages
-python-telegram-bot==21.3
-aiohttp==3.9.3
-Flask==3.0.2
-APScheduler==3.10.4
-psycopg2-binary==2.9.9
-python-dotenv==1.0.1
-asyncpg==0.29.0
+# ===== Python 3.11 (stable) =====
+python-telegram-bot>=21.3
+aiohttp>=3.9.3
+Flask>=3.0.2
+APScheduler>=3.10.4
+psycopg2-binary>=2.9.9
+python-dotenv>=1.0.1
+asyncpg>=0.29.0

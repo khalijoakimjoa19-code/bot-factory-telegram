@@ -1,0 +1,7 @@
+# This way Railway knows to treat it as a Python project
+[build]
+provider = "python"
+pythonVersion = "3.11"
+
+[deploy]
+startCommand = "python main.py"
