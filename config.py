@@ -1,4 +1,4 @@
-# ============================================================
+ï»¿# ============================================================
 # config.py - Configuration for individual bot instances
 # ============================================================
 from typing import Dict, Any
@@ -23,8 +23,8 @@ WELCOME_MESSAGE = (
 
 PAYMENT_PENDING_MESSAGE = (
     "?? *STK Push Sent!*\n\n"
-    "Check your phone — enter M-Pesa PIN to pay *KES {amount}*.\n\n"
-    "? Waiting for confirmation… (up to 2 minutes)\n"
+    "Check your phone â€” enter M-Pesa PIN to pay *KES {amount}*.\n\n"
+    "? Waiting for confirmationâ€¦ (up to 2 minutes)\n"
     "Once paid, your invite link will appear here automatically."
 )
 

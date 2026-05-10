@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 # Test to verify all modules can be imported
 
 print("Testing Railway build compatibility...")
