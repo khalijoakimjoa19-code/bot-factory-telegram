@@ -1,0 +1,213 @@
+# ============================================================
+# factory_bot.py - Factory bot implementation
+# ============================================================
+import logging
+from telegram import (
+    Update, InlineKeyboardButton, InlineKeyboardMarkup
+)
+from telegram.ext import (
+    Application, CommandHandler, CallbackQueryHandler, 
+    ContextTypes, ConversationHandler, filters, MessageHandler
+)
+from typing import Dict, Any, List
+import asyncio
+from datetime import datetime, timedelta
+from factory_database import FactoryDatabase
+from factory_config import FACTORY_ADMIN_ID, PLANS, FACTORY_BOT_TOKEN, MEGAPAY_API_KEY, MEGAPAY_EMAIL
+
+logger = logging.getLogger(__name__)
+
+# Conversation states
+CLONE_BOT_TOKEN = 0
+CLONE_ADMIN_ID = 1
+
+class FactoryBot:
+    """Factory bot that manages multiple bot instances"""
+    
+    def __init__(self, db: FactoryDatabase):
+        self.db = db
+        self.running_bots: Dict[str, Application] = {}
+    
+    def _is_factory_admin(self, user_id: int) -> bool:
+        """Check if user is factory admin"""
+        return user_id == FACTORY_ADMIN_ID
+    
+    async def start_command(self, update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+        """Start command for factory bot"""
+        await update.message.reply_text(
+            "?? *Bot Factory*\n\n"
+            "This is the factory bot that creates and manages bot instances.\n\n"
+            "Commands:\n"
+            "ò /clone - Create new bot instance\n"
+            "ò /list_bots - List all bot instances\n"
+            "ò /admin - Factory admin panel",
+            parse_mode="Markdown"
+        )
+    
+    async def clone_start(self, update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+        """Start cloning process"""
+        if not self._is_factory_admin(update.effective_user.id):
+            await update.message.reply_text("? Factory admin access only.")
+            return ConversationHandler.END
+        
+        await update.message.reply_text(
+            "?? *Clone New Bot*\n\n"
+            "Please send the bot token from @BotFather:",
+            parse_mode="Markdown"
+        )
+        return CLONE_BOT_TOKEN
+    
+    async def clone_token(self, update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+        """Receive bot token"""
+        token = update.message.text.strip()
+        
+        if not token or ":" not in token:
+            await update.message.reply_text("? Invalid token format. Send in format: 123456:ABC-DEF...", parse_mode="Markdown")
+            return CLONE_BOT_TOKEN
+        
+        ctx.user_data['bot_token'] = token
+        await update.message.reply_text("? Token received.\n\nNow send the admin Telegram ID:")
+        return CLONE_ADMIN_ID
+    
+    async def clone_admin(self, update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+        """Receive admin ID and create bot"""
+        try:
+            admin_id = int(update.message.text.strip())
+        except ValueError:
+            await update.message.reply_text("? Invalid ID. Send a number like 1215706052")
+            return CLONE_ADMIN_ID
+        
+        bot_token = ctx.user_data['bot_token']
+        
+        try:
+            # Get bot info from Telegram
+            bot = Bot(bot_token)
+            bot_info = await bot.get_me()
+            
+            # Create bot in database
+            bot_id = await self.db.create_bot(
+                bot_token=bot_token,
+                admin_id=admin_id,
+                bot_name=bot_info.username,
+                channel_id=-1003701835008,  # Shared channel
+                config={'plans': PLANS}
+            )
+            
+            await update.message.reply_text(
+                f"? Bot created successfully!\n\n"
+                f"?? @{bot_info.username}\n"
+                f"?? Bot ID: {bot_id}\n"
+                f"?? Admin: {admin_id}\n\n"
+                f"Send /admin to bot to access settings."
+            )
+            
+            ctx.user_data.clear()
+            return ConversationHandler.END
+            
+        except Exception as e:
+            logger.error(f"Failed to create bot: {e}", exc_info=True)
+            await update.message.reply_text(f"? Failed: {str(e)}")
+            ctx.user_data.clear()
+            return ConversationHandler.END
+    
+    async def list_bots(self, update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+        """List all bot instances"""
+        if not self._is_factory_admin(update.effective_user.id):
+            await update.message.reply_text("? Factory admin only.")
+            return
+        
+        bots = await self.db.get_all_bots()
+        
+        if not bots:
+            await update.message.reply_text("No bots created yet.")
+            return
+        
+        lines = ["?? *Bot Instances*\n"]
+        for bot in bots:
+            status = "?? Active" if bot['is_active'] else "?? Inactive"
+            lines.append(f"ò @{bot['bot_name']} (#{bot['bot_id']}) - {status}")
+        
+        await update.message.reply_text("\n".join(lines), parse_mode="Markdown")
+    
+    async def admin_panel(self, update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+        """Factory admin panel"""
+        if not self._is_factory_admin(update.effective_user.id):
+            await update.message.reply_text("? Factory admin only.")
+            return
+        
+        keyboard = [
+            [InlineKeyboardButton("?? Create Bot", callback_data="factory_clone")],
+            [InlineKeyboardButton("?? List Bots", callback_data="factory_list")],
+            [InlineKeyboardButton("?? Factory Analytics", callback_data="factory_stats")],
+        ]
+        
+        await update.message.reply_text(
+            "??? *Factory Admin Panel*\n\nWhat would you like to do?",
+            parse_mode="Markdown",
+            reply_markup=InlineKeyboardMarkup(keyboard)
+        )
+    
+    async def factory_stats(self, update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+        """Show factory-wide analytics"""
+        query = update.callback_query
+        await query.answer()
+        
+        if not self._is_factory_admin(query.from_user.id):
+            await query.answer("Access denied.", show_alert=True)
+            return
+        
+        stats = await self.db.get_factory_analytics()
+        
+        text = (
+            "?? *Factory Analytics*\n\n"
+            f"?? Total Bots: *{stats['bot_count']}*\n"
+            f"?? Total Users: *{stats['total_users']}*\n"
+            f"?? Total Revenue: *KES {stats['total_revenue']}*\n"
+            f"?? Total Payments: *{stats['total_payments']}*\n"
+        )
+        
+        await query.edit_message_text(text, parse_mode="Markdown")
+    
+    async def cancel(self, update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+        """Cancel conversation"""
+        await update.message.reply_text("? Cancelled.")
+        ctx.user_data.clear()
+        return ConversationHandler.END
+
+# Global instances
+_factory_instance = None
+_db_instance = None
+
+def setup_factory_bot(application: Application, db: FactoryDatabase):
+    """Set up factory bot handlers"""
+    global _factory_instance, _db_instance
+    _factory_instance = FactoryBot(db)
+    _db_instance = db
+    
+    # Clone command with conversation
+    clone_handler = ConversationHandler(
+        entry_points=[CommandHandler("clone", _factory_instance.clone_start)],
+        states={
+            CLONE_BOT_TOKEN: [MessageHandler(filters.TEXT & ~filters.COMMAND, _factory_instance.clone_token)],
+            CLONE_ADMIN_ID: [MessageHandler(filters.TEXT & ~filters.COMMAND, _factory_instance.clone_admin)],
+        },
+        fallbacks=[CommandHandler("cancel", _factory_instance.cancel)],
+        per_user=True,
+        allow_reentry=True,
+    )
+    
+    application.add_handler(clone_handler)
+    application.add_handler(CommandHandler("list_bots", _factory_instance.list_bots))
+    application.add_handler(CommandHandler("admin", _factory_instance.admin_panel))
+    application.add_handler(CommandHandler("start", _factory_instance.start_command))
+    application.add_handler(CallbackQueryHandler(_factory_instance.factory_stats, pattern="^factory_stats$"))
+    
+    logger.info("? Factory bot handlers set up")
+
+async def run_factory_bot(application: Application, db: FactoryDatabase):
+    """Run the factory bot"""
+    logger.info("?? Starting factory bot with polling...")
+    await application.initialize()
+    await application.start()
+    logger.info("? Factory bot is running")
+    await application.idle()
