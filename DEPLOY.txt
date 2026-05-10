@@ -1,0 +1,14 @@
+# Deploy to Railway
+
+Railway will build from current repo.
+
+## Required Environment Variables in Railway Dashboard:
+
+1. FACTORY_BOT_TOKEN=8537889816:AAGffqSQwJL1YlzKvE_IRtO1r09Km0O_Mlc
+2. FACTORY_ADMIN_ID=1215706052
+3. MEGAPAY_API_KEY=your_megapay_key
+4. MEGAPAY_EMAIL=your_megapay_email
+5. POSTGRES_DSN=(auto-filled by Railway PostgreSQL addon)
+6. SHARED_CHANNEL_ID=-1003701835008
+
+Railway will read config from nixpacks.toml which configures Python 3.11 and required packages.
