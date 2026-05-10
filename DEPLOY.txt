@@ -4,7 +4,7 @@ Railway will build from current repo.
 
 ## Required Environment Variables in Railway Dashboard:
 
-1. FACTORY_BOT_TOKEN=8537889816:AAGffqSQwJL1YlzKvE_IRtO1r09Km0O_Mlc
+1. FACTORY_BOT_TOKEN=8619028894:AAENoAFIzITxgTyeZ57_s2xjw1eb_6IHeLc
 2. FACTORY_ADMIN_ID=1215706052
 3. MEGAPAY_API_KEY=your_megapay_key
 4. MEGAPAY_EMAIL=your_megapay_email
