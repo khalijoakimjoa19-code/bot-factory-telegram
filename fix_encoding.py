@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 # Fix UTF-8 encoding issues in Python files
 
 import os
