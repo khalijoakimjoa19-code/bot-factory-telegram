@@ -1,4 +1,4 @@
-# ============================================================
+ï»¿# ============================================================
 # factory_bot.py - Factory bot implementation
 # ============================================================
 import logging
@@ -38,9 +38,9 @@ class FactoryBot:
             "?? *Bot Factory*\n\n"
             "This is the factory bot that creates and manages bot instances.\n\n"
             "Commands:\n"
-            "ò /clone - Create new bot instance\n"
-            "ò /list_bots - List all bot instances\n"
-            "ò /admin - Factory admin panel",
+            "â‰¥ /clone - Create new bot instance\n"
+            "â‰¥ /list_bots - List all bot instances\n"
+            "â‰¥ /admin - Factory admin panel",
             parse_mode="Markdown"
         )
     
@@ -125,7 +125,7 @@ class FactoryBot:
         lines = ["?? *Bot Instances*\n"]
         for bot in bots:
             status = "?? Active" if bot['is_active'] else "?? Inactive"
-            lines.append(f"ò @{bot['bot_name']} (#{bot['bot_id']}) - {status}")
+            lines.append(f"â‰¥ @{bot['bot_name']} (#{bot['bot_id']}) - {status}")
         
         await update.message.reply_text("\n".join(lines), parse_mode="Markdown")
     

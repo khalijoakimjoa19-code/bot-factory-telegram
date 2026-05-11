@@ -1,4 +1,4 @@
-# ============================================================
+ï»¿# ============================================================
 # bot.py - Complete Premium Bot (Copied from New folder)
 # ============================================================
 import logging
@@ -31,7 +31,7 @@ def plan_keyboard():
     for key, plan in PLANS.items():
         rows.append([
             InlineKeyboardButton(
-                f"{plan['emoji']} {plan['label']} ù KES {plan['price']:,}",
+                f"{plan['emoji']} {plan['label']} âˆ™ KES {plan['price']:,}",
                 callback_data=f"plan_{key}",
             )
         ])
@@ -125,7 +125,7 @@ async def handle_plan_selection(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     plan_info = PLANS[plan_key]
     ctx.user_data["selected_plan"] = plan_key
     await query.edit_message_text(
-        f"? You selected: *{plan_info['emoji']} {plan_info['label']} ù KES {plan_info['price']:,}*\n\n"
+        f"? You selected: *{plan_info['emoji']} {plan_info['label']} âˆ™ KES {plan_info['price']:,}*\n\n"
         "?? Enter your *M-Pesa phone number* to receive the payment prompt:\n"
         "_(Example: 0712345678 or 254712345678)_",
         parse_mode="Markdown",
@@ -190,7 +190,7 @@ async def handle_phone(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 async def handle_resend(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
-    await query.answer("Resending STK pushà", show_alert=False)
+    await query.answer("Resending STK pushÎ±", show_alert=False)
     parts = query.data.split("_", 2)
     plan_key = parts[1] if len(parts) > 1 else None
     phone = parts[2] if len(parts) > 2 else None
@@ -265,7 +265,7 @@ async def admin_analytics_cb(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     recent_lines = ""
     for p in stats["recent_payments"][:5]:
         pi = PLANS.get(p["plan"], {})
-        recent_lines += f"  ò {p['first_name']} ù KES {p['amount']:,} ({pi.get('label', p['plan'])}) ù {p['mpesa_ref']}\n"
+        recent_lines += f"  â‰¥ {p['first_name']} âˆ™ KES {p['amount']:,} ({pi.get('label', p['plan'])}) âˆ™ {p['mpesa_ref']}\n"
     text = (
         "?? *Bot Analytics*\n\n"
         f"?? Total Users: *{stats['total_users']}*\n"
@@ -306,10 +306,10 @@ async def admin_subscribers_cb(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         sub = database.get_active_subscription(s["telegram_id"])
         plan = PLANS.get(sub["plan"], {}).get("label", "?") if sub else "?"
         end_dt = datetime.fromisoformat(str(sub["end_date"])).strftime("%d %b") if sub else "?"
-        lines.append(f"ò {s['first_name']} ({uname}) ù {plan} until {end_dt}")
+        lines.append(f"â‰¥ {s['first_name']} ({uname}) âˆ™ {plan} until {end_dt}")
     text = "\n".join(lines[:50])
     if len(subs) > 50:
-        text += f"\nàand {len(subs)-50} more."
+        text += f"\nÎ±and {len(subs)-50} more."
     await query.edit_message_text(
         text, parse_mode="Markdown",
         reply_markup=InlineKeyboardMarkup([[
