@@ -1,4 +1,4 @@
-# Quick connectivity test
+﻿# Quick connectivity test
 import asyncio
 from telegram import Bot
 import os
